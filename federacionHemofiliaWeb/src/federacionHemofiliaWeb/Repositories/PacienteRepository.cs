@@ -1,47 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.OptionsModel;
-using System.Net.Mail;
 
-using FireSharp;
-using FireSharp.Config;
-using FireSharp.Response;
-using FireSharp.Interfaces;
 using Neo4jClient;
 using SendGrid;
 
 using federacionHemofiliaWeb.Interfaces;
 using federacionHemofiliaWeb.Models;
 using federacionHemofiliaWeb.Services;
+using SendGrid.Helpers.Mail;
+using Microsoft.Extensions.Options;
 
 namespace federacionHemofiliaWeb.Repositories
 {
     public class PacienteRepository : IPacienteRepository
     {
-        private IFirebaseClient client;
         private GraphClient neoClient;
-        private Web emailSender;
+        private SendGridClient emailSender;
 
         public PacienteRepository(IOptions<FireOps> options)
         {
-            client = new FirebaseClient(new FirebaseConfig
-            {
-                AuthSecret = options.Value.Secret,
-                BasePath = options.Value.Url
-            });
-
             neoClient = new GraphClient(
                 new Uri(options.Value.NeoUrl),
                 options.Value.NeoUser,
                 options.Value.NeoPss);
 
-            emailSender = new Web(options.Value.SendGrid);
+            emailSender = new SendGridClient(options.Value.SendGrid);
         }
 
         public async Task<bool> create(Paciente paciente, string id)
         {
+            throw new NotImplementedException();
+            /*
             var pacientes = new Dictionary<string, Paciente>();
             pacientes.Add(id, paciente);
             var response = await client.UpdateAsync($"users/", pacientes);
@@ -66,31 +56,43 @@ namespace federacionHemofiliaWeb.Repositories
             {
                 return false;
             }
+            */
         }
 
         public async Task<Dictionary<string,Paciente>> get()
         {
+            throw new NotImplementedException();
+            /*
             var response = await client.GetAsync("users/");
             var pacientes = response.ResultAs<Dictionary<string, Paciente>>();
             return pacientes;
+            */
         }
 
         public async Task<Paciente> get(string id)
         {
+            throw new NotImplementedException();
+            /*
             var response = await client.GetAsync($"users/{id}");
             var user = response.ResultAs<Paciente>();
             return user;
+            */
         }
 
         public async Task<Dictionary<DateTime, int>> getData(string id)
         {
+            throw new NotImplementedException();
+            /*
             var response = await client.GetAsync($"users/{id}/Aplicaciones/");
             var datos = response.ResultAs<Dictionary<DateTime, int>>();
             return datos;
+            */
         }
 
         public async Task<bool> update(Paciente paciente, string id)
         {
+            throw new NotImplementedException();
+            /*
             var users = await get();
             users[id] = paciente;
             
@@ -110,15 +112,16 @@ namespace federacionHemofiliaWeb.Repositories
                 Console.WriteLine(ex.Message);
             }
             return false;
+            */
         }
 
         public async void sendEmail(string email, string password)
         {
-            SendGridMessage newMessage = new SendGridMessage();
+            var newMessage = new SendGridMessage();
             newMessage.AddTo(email);
-            newMessage.From = new MailAddress("hello@federacion.com", "Hello");
+            newMessage.From = new EmailAddress("hello@federacion.com", "Hello");
             newMessage.Subject = "Nueva cuenta";
-            newMessage.Html = $@"
+            newMessage.HtmlContent = $@"
                                 <html>
                                     <body>
                                             <p>
@@ -127,7 +130,7 @@ namespace federacionHemofiliaWeb.Repositories
                                     </body>
                                 </html>";
 
-            await emailSender.DeliverAsync(newMessage);
+            await emailSender.SendEmailAsync(newMessage);
         }
     }
 }

@@ -2,54 +2,51 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.OptionsModel;
 using System.Net.Mail;
 using System.Security.Cryptography;
 
-using FireSharp;
-using FireSharp.Interfaces;
-using FireSharp.Config;
 using Neo4jClient;
 using SendGrid;
 
 using federacionHemofiliaWeb.Interfaces;
 using federacionHemofiliaWeb.Models;
 using federacionHemofiliaWeb.Models.Neo4j;
-using federacionHemofiliaWeb.Services;  
+using federacionHemofiliaWeb.Services;
+using Microsoft.Extensions.Options;
+using SendGrid.Helpers.Mail;
 
 namespace federacionHemofiliaWeb.Repositories
 {
     public class DoctorRepository : IDoctorRepository
     {
-        private IFirebaseClient client;
         private GraphClient neoClient;
-        private Web emailSender;
+        private SendGridClient emailSender;
 
         public DoctorRepository(IOptions<FireOps> options)
         {
-            client = new FirebaseClient(new FirebaseConfig
-            {
-                AuthSecret = options.Value.Secret,
-                BasePath = options.Value.Url
-            });
 
             neoClient = new GraphClient(
                 new Uri(options.Value.NeoUrl),
                 options.Value.NeoUser,
                 options.Value.NeoPss);
 
-            emailSender = new Web(options.Value.SendGrid);
+            emailSender = new SendGridClient(options.Value.SendGrid);
         }
 
         public async Task<Medico> GetDoctor(string Id)
         {
+            throw new NotImplementedException();
+            /*
             var response = await client.GetAsync($"Doctors/{Id}");
             var doctor = response.ResultAs<Medico>();
             return doctor;
+            */
         }
 
         public async Task<bool> Create(Medico doctor, string Id)
         {
+            throw new NotImplementedException();
+            /*
             var doctores = new Dictionary<string, Medico>();
             doctores.Add(Id, doctor);
             var createDoctor = await client.UpdateAsync($"Doctors/", doctores);
@@ -74,6 +71,7 @@ namespace federacionHemofiliaWeb.Repositories
             {
                 return false;
             }
+            */
         }
 
         public async void SendMail(string nameDoctor, string mailReceiver)
@@ -81,16 +79,16 @@ namespace federacionHemofiliaWeb.Repositories
             var hash = GetHash(mailReceiver);
             var newMessage = new SendGridMessage();
             newMessage.AddTo(mailReceiver);
-            newMessage.From = new MailAddress("hello@federacion.com");
+            newMessage.From = new EmailAddress("hello@federacion.com");
             newMessage.Subject = $"Invitacion de {nameDoctor} para Proyecto Ultra";
-            newMessage.Html = $@"
+            newMessage.HtmlContent = $@"
                                   <html>
                                         <body><p>El doctor {nameDoctor} te invitó a participar del proyecto Ultra!</p>
                                               <p>ve a la siguiente liga <a href='http://localhost:5000/User/Registro/{hash}'>link</a></p>
                                         </body>
                                   </html>";
 
-            await emailSender.DeliverAsync(newMessage);
+            await emailSender.SendEmailAsync(newMessage);
         }
 
         public string GetHash(string mail)

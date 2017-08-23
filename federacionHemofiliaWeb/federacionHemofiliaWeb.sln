@@ -1,16 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CD50519D-6565-43AB-871D-8B28F8D07F56}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3E1FDFA4-9304-4A87-AB07-54EFC9D7F999}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "federacionHemofiliaWeb", "src\federacionHemofiliaWeb\federacionHemofiliaWeb.xproj", "{8BD4DE25-3162-4ACB-A9BD-D47E3B03423B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "federacionHemofiliaWeb", "src\federacionHemofiliaWeb\federacionHemofiliaWeb.csproj", "{8BD4DE25-3162-4ACB-A9BD-D47E3B03423B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,5 +23,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8BD4DE25-3162-4ACB-A9BD-D47E3B03423B} = {CD50519D-6565-43AB-871D-8B28F8D07F56}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1631B55E-A31C-4F29-82AB-565200E22814}
 	EndGlobalSection
 EndGlobal

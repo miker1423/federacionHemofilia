@@ -1,19 +1,17 @@
-using Microsoft.AspNet.Mvc;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc;
 
 using federacionHemofiliaWeb.ViewModels.Registro;
 using federacionHemofiliaWeb.Models;
 using federacionHemofiliaWeb.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace federacionHemofiliaWeb.Controllers
 {
     public class UserController : Controller
     {
-        [FromServices]
-        public IDoctorRepository doctorMethods { get; set; }
+        public IDoctorRepository DoctorMethods { get; set; }
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -22,11 +20,13 @@ namespace federacionHemofiliaWeb.Controllers
 
         public UserController(UserManager<ApplicationUser> userManager,
                               SignInManager<ApplicationUser> signInManager,
-                              ApplicationDbContext applicationDbContex)
+                              ApplicationDbContext applicationDbContex,
+                              IDoctorRepository doctorRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _applicationDbContext = applicationDbContex;
+            DoctorMethods = doctorRepository;
         }
 
         [HttpGet]
@@ -58,7 +58,7 @@ namespace federacionHemofiliaWeb.Controllers
 
                 if(Id != null)
                 {
-                    if (Id == doctorMethods.GetHash(doctor.Email))
+                    if (Id == DoctorMethods.GetHash(doctor.Email))
                     {
                         var result = await _userManager.CreateAsync(user, doctor.Password);
                         if (result.Succeeded)
@@ -73,7 +73,7 @@ namespace federacionHemofiliaWeb.Controllers
                                 Citas = new System.Collections.Generic.Dictionary<System.DateTime, string>()
                             };
 
-                            var succeded = await doctorMethods.Create(newDoctor, user.Id);
+                            var succeded = await DoctorMethods.Create(newDoctor, user.Id);
 
                             if (succeded)
                             {
@@ -97,7 +97,7 @@ namespace federacionHemofiliaWeb.Controllers
                             Citas = new System.Collections.Generic.Dictionary<System.DateTime, string>()
                         };
 
-                        var succeded = await doctorMethods.Create(newDoctor, user.Id);
+                        var succeded = await DoctorMethods.Create(newDoctor, user.Id);
 
                         if (succeded)
                         {

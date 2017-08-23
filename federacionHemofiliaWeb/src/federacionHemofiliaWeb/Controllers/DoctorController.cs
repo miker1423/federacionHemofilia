@@ -2,29 +2,33 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Identity;
-
 using federacionHemofiliaWeb.Interfaces;
 using federacionHemofiliaWeb.Models;
 using federacionHemofiliaWeb.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 
 namespace federacionHemofiliaWeb.Controllers
 {
     public class DoctorController : Controller
     {
-        [FromServices]
-        public IPacienteRepository pacientes { get; set; }
+        public IPacienteRepository PacienteRepository { get; set; }
+        
+        public ICitaRepository CitasRepository { get; set; }
+        
+        public IDoctorRepository DoctorRepository { get; set; }
 
-        [FromServices]
-        public ICitaRepository citas { get; set; }
-
-        [FromServices]
-        public IDoctorRepository doctorRepo { get; set; }
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public DoctorController(UserManager<ApplicationUser> userManager)
+        public DoctorController(
+            UserManager<ApplicationUser> userManager,
+            IPacienteRepository pacienteRepository,
+            ICitaRepository citaRepository,
+            IDoctorRepository doctorRepository)
         {
+            PacienteRepository = pacienteRepository;
+            CitasRepository = citaRepository;
+            DoctorRepository = doctorRepository;
             _userManager = userManager;
         }
 
@@ -35,11 +39,11 @@ namespace federacionHemofiliaWeb.Controllers
             { 
                 var id = await _userManager.FindByEmailAsync(User.Identity.Name);
                 var date = DateTime.Now;
-                var listaDePacientes = await citas.Get(id.Id, date);
+                var listaDePacientes = await CitasRepository.Get(id.Id, date);
                 var pacient = new Dictionary<string, Paciente>();
                 foreach (var paciente in listaDePacientes)
                 {
-                    pacient.Add(paciente, await pacientes.get(paciente));
+                    pacient.Add(paciente, await PacienteRepository.get(paciente));
                 }
 
                 return View(new PacienteMV
@@ -56,7 +60,7 @@ namespace federacionHemofiliaWeb.Controllers
         [HttpGet]
         public async Task<Dictionary<DateTime, int>> pacienteGraph(string id)
         {
-            return await pacientes.getData(id);
+            return await PacienteRepository.getData(id);
         }
         
         [HttpGet]
@@ -77,7 +81,7 @@ namespace federacionHemofiliaWeb.Controllers
             var paciente = await _userManager.FindByEmailAsync(cita.Email);
             var doctor = await _userManager.FindByNameAsync(User.Identity.Name);
             
-            if(await citas.Create(doctor.Id, paciente.Id, cita.Fecha))
+            if(await CitasRepository.Create(doctor.Id, paciente.Id, cita.Fecha))
             {
                 return RedirectToAction("Registro");
             }
@@ -90,9 +94,9 @@ namespace federacionHemofiliaWeb.Controllers
             if (ModelState.IsValid)
             {
                 var doctor = await _userManager.FindByEmailAsync(User.Identity.Name);
-                var doctorName = await doctorRepo.GetDoctor(doctor.Id);
+                var doctorName = await DoctorRepository.GetDoctor(doctor.Id);
                 var doctorFullName = doctorName.FirstName + " " + doctorName.LastNames; 
-                doctorRepo.SendMail(doctorFullName, invitacion.Correo);
+                DoctorRepository.SendMail(doctorFullName, invitacion.Correo);
             }
 
             return RedirectToAction("InvitacionEnviada", "Doctor", invitacion.Correo);
@@ -108,7 +112,7 @@ namespace federacionHemofiliaWeb.Controllers
         public async Task<IActionResult> Confirmacion(string Id)
         {
             var user = await _userManager.FindByEmailAsync(Id);
-            var name = await pacientes.get(user.Id);
+            var name = await PacienteRepository.get(user.Id);
 
             var fullName = new PacienteUserName
             {

@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 
 using federacionHemofiliaWeb.Models;
 using federacionHemofiliaWeb.ViewModels;
 using federacionHemofiliaWeb.Interfaces;
 using federacionHemofiliaWeb.ViewModels.Registro;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,8 +17,7 @@ namespace federacionHemofiliaWeb.Controllers
 {
     public class PacienteController : Controller
     {
-        [FromServices]
-        public IPacienteRepository pacienteMethods { get; set; }
+        public IPacienteRepository PacienteMethods { get; set; }
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -26,17 +25,19 @@ namespace federacionHemofiliaWeb.Controllers
 
         public PacienteController(UserManager<ApplicationUser> userManager,
                                   SignInManager<ApplicationUser> signInManager,
-                                  ApplicationDbContext applicationDbContex)
+                                  ApplicationDbContext applicationDbContex,
+                                  IPacienteRepository pacienteRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _applicationDbContext = applicationDbContex;
+            PacienteMethods = pacienteRepository;
         }
 
         [HttpPost]
         public async Task<bool> registerApliacion([FromBody]AplicacionMV aplicacion)
         {
-            var user = await pacienteMethods.get(aplicacion.userId);
+            var user = await PacienteMethods.get(aplicacion.userId);
             if(user.Aplicaciones == null)
             {
                 user.Aplicaciones = new Dictionary<DateTime, int>();
@@ -46,7 +47,7 @@ namespace federacionHemofiliaWeb.Controllers
             {
                 user.Aplicaciones.Add(aplicacion.nuevaAplicacion.fecha, aplicacion.nuevaAplicacion.cantidad);
             }
-            if (await pacienteMethods.update(user, aplicacion.userId))
+            if (await PacienteMethods.update(user, aplicacion.userId))
             {
                 return true;
             }
@@ -111,8 +112,8 @@ namespace federacionHemofiliaWeb.Controllers
                         FotoUrl = "http://www.silverlakerowingclub.com/img/placeholder-user.png"
                     };
 
-                    var succed = await pacienteMethods.create(newPaciente, user.Id);
-                    pacienteMethods.sendEmail(paciente.Email, getPass);
+                    var succed = await PacienteMethods.create(newPaciente, user.Id);
+                    PacienteMethods.sendEmail(paciente.Email, getPass);
 
                     if (succed)
                     {
